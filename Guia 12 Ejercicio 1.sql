@@ -54,13 +54,46 @@ SELECT * FROM empleado WHERE comision <= salario*0.3;
 SELECT * FROM empleado WHERE nombre NOT LIKE "%MA%";
 
 #item 18: . Obtener los nombres de los departamentos que sean “Ventas” ni “Investigación” ni ‘Mantenimiento'.
-SELECT nombre_depto from departamento WHERE nombre_depto LIKE "%VENTAS%" OR "%INVESTIGACIÓN%" OR "%MANTENIMIENTO%"; #NO FUNCIONAAAAAAAA
+SELECT id_depto, nombre_depto from departamento WHERE nombre_depto IN ("VENTAS" , "INVESTIGACIÓN" , "MANTENIMIENTO"); 
 
 #item 19: Ahora obtener los nombres de los departamentos que no sean “Ventas” ni “Investigación” ni ‘Mantenimiento.
-SELECT nombre_depto from departamento WHERE nombre_depto NOT LIKE "%VENTAS%" OR "%INVESTIGACIÓN%" OR "%MANTENIMIENTO%"; #NO FUNCIONAAAAAAAA
+
+SELECT nombre_depto from departamento WHERE nombre_depto NOT IN ("VENTAS" , "INVESTIGACIÓN" , "MANTENIMIENTO"); 
 
 #item 20: 20. Mostrar el salario más alto de la empresa.
 SELECT MAX(salario) from empleado;
 
 #item 21:  Mostrar el nombre del último empleado de la lista por orden alfabético.
+SELECT nombre FROM empleado ORDER BY nombre DESC LIMIT 1;
 
+#item 22: Hallar el salario más alto, el más bajo y la diferencia entre ellos
+SELECT MAX(salario) AS Maximo_Salario, MIN(salario) AS Minimo_Salario, (MAX(salario) - MIN(salario)) AS "Diferencia" FROM empleado;
+
+#item 23: Hallar el salario promedio por departamento.
+SELECT id_depto, AVG(Salario) FROM empleado GROUP BY id_depto;
+
+#item 24: . Hallar los departamentos que tienen más de tres empleados. Mostrar el número de empleados de esos departamentos.
+SELECT id_depto, COUNT(id_empleado) as cantidad_empleados FROM empleado GROUP BY id_depto HAVING cantidad_empleados>3;
+
+#item 25: Mostrar el código y nombre de cada jefe, junto al número de empleados que dirige. Solo los que tengan más de dos empleados (2 incluido).
+select 
+RIGHT(cod_jefe, 3) as id_jefe, #estos son los ultimos tres numeros del cod_jefe, que vienen a ser un numero de empleado
+(SELECT nombre FROM empleado WHERE id_empleado=id_jefe) as "Nombre Jefe", #esto es, usando esos ultimos 3 numeros, la busqueda de a que empleado corresponden
+(SELECT cargo FROM empleado WHERE id_empleado=id_jefe) as "Cargo Jefe", #esto es lo mismo pero buscando el cargo de dicho empleado
+count(id_empleado) as "Cantidad de Empleados"
+					from empleado 
+                    group by RIGHT(cod_jefe, 3) 
+                    having count(id_empleado)>=2;
+                    
+#item 26: Hallar los departamentos que no tienen empleado
+SELECT 
+departamento.id_depto, 
+COUNT(id_empleado) as cant_empleados 
+					FROM empleado 
+                    INNER JOIN departamento ON empleado.id_depto = departamento.id_depto 
+                    GROUP BY id_depto 
+                    HAVING cant_empleados=0; 
+#no devuelve nada xq no hay deptos sin gente
+
+#item 27: Mostrar la lista de los empleados cuyo salario es mayor o igual que el promedio de la empresa. Ordenarlo por departamento.
+SELECT nombre, salario from empleado where salario>=(select AVG(salario) from empleado) ORDER BY id_depto;
